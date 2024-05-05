@@ -12,7 +12,6 @@ const generateAccessTokenAndRefreshToken = async (userId) => {
         user.refreshToken = refreshToken
 
         await user.save({ validateBeforeSave: false })
-
         return { accessToken, refreshToken }
     } catch (error) {
         throw new ApiError(500, "Somethings went to wrong while generate access and refresh token ")
@@ -94,7 +93,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
     const { email, username, password } = req.body
 
-    if (!(email || username)) {
+    if (!email && !username) {
         throw new ApiError(400, 'username or email is required')
     }
     const user = await User.findOne({
@@ -109,12 +108,11 @@ const loginUser = asyncHandler(async (req, res) => {
         throw new ApiError(401, 'Invalid user credentials')
     }
     let { accessToken, refreshToken } = await generateAccessTokenAndRefreshToken(user._id)
-
     const loggedInUser = await User.findById(user._id).select('-password -refreshToken')
 
     const options = {
         httpOnly: true,
-        secure: true
+        secure: false,
     }
     return res
         .status(200)
@@ -141,7 +139,7 @@ const logoutUser = asyncHandler(async (req, res) => {
 
     const options = {
         httpOnly: true,
-        secure: true
+        secure: false
     }
     return res
         .status(200)
