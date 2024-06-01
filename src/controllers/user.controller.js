@@ -131,8 +131,8 @@ const logoutUser = asyncHandler(async (req, res) => {
     await User.findByIdAndUpdate(
         req.user._id,
         {
-            $set: {
-                refreshToken: undefined
+            $unset: {
+                refreshToken: 1
             }
         }, {
         new: true
@@ -204,11 +204,11 @@ const getCurrentUser = asyncHandler(async (req, res) => {
 })
 const updateUserDetails = asyncHandler(async (req, res) => {
     const { fullName, email } = req.body
-    if (!fullName || !email) {
+    if (!fullName && !email) {
         throw new ApiError(400, 'all fields are required')
     }
     const user = await User.findByIdAndUpdate(
-        req.use?._id,
+        req.user?._id,
         {
             $set:
             {
@@ -231,7 +231,7 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
     if (!avatar.url) {
         throw new ApiError(400, 'Error while upload Avatar')
     }
-    const user = User.findByIdAndUpdate(req.use?._id, {
+    const user = await User.findByIdAndUpdate(req.user?._id, {
         $set: { avatar: avatar.url }
     }, { new: true }).select('-password')
 
@@ -248,7 +248,7 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
     if (!coverImage.url) {
         throw new ApiError(400, 'Error while upload Avatar')
     }
-    const user = User.findByIdAndUpdate(req.use?._id, {
+    const user = await User.findByIdAndUpdate(req.user?._id, {
         $set: { coverImage: coverImage.url }
     }, { new: true }).select('-password')
 
